@@ -1,4 +1,4 @@
-name: Build Eaglercraft 1.8.8 Client
+name: Build Eaglercraft JS + WASM
 
 on:
   push:
@@ -20,26 +20,49 @@ jobs:
         distribution: 'temurin'
         java-version: '17'
 
-    - name: Make build scripts executable
+    - name: Make scripts executable
       run: |
         chmod +x build_init.sh
         chmod +x build_make_workspace.sh
         chmod +x CompileLatestClient.sh
+        chmod +x MakeWASMClientBundle.sh
 
-    - name: Initialize build environment
+    - name: Remove all previous build outputs (NO CACHING)
+      run: |
+        rm -rf mcp918/workspace
+        rm -rf build
+        rm -rf dist
+        rm -rf web
+        rm -rf out
+        rm -rf tmp
+
+    - name: Initialize build environment (fresh)
       run: ./build_init.sh
 
-    - name: Generate workspace
+    - name: Generate workspace (fresh)
       run: ./build_make_workspace.sh
 
-    - name: Compile latest client
+    - name: Build JavaScript client
       run: ./CompileLatestClient.sh
 
-    - name: Upload compiled client
+    - name: Build WASM-GC client
+      run: ./MakeWASMClientBundle.sh
+
+    - name: Upload JS client
       uses: actions/upload-artifact@v3
       with:
-        name: eaglercraft-client
+        name: eaglercraft-js-client
         path: |
           web/
           dist/
+          *.html
+
+    - name: Upload WASM-GC client
+      uses: actions/upload-artifact@v3
+      with:
+        name: eaglercraft-wasm-client
+        path: |
+          wasm/
+          wasm-out/
+          *.wasm
           *.html
