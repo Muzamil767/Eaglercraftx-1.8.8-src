@@ -1,0 +1,45 @@
+name: Build Eaglercraft 1.8.8 Client
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Install Java 17
+      uses: actions/setup-java@v3
+      with:
+        distribution: 'temurin'
+        java-version: '17'
+
+    - name: Make build scripts executable
+      run: |
+        chmod +x build_init.sh
+        chmod +x build_make_workspace.sh
+        chmod +x CompileLatestClient.sh
+
+    - name: Initialize build environment
+      run: ./build_init.sh
+
+    - name: Generate workspace
+      run: ./build_make_workspace.sh
+
+    - name: Compile latest client
+      run: ./CompileLatestClient.sh
+
+    - name: Upload compiled client
+      uses: actions/upload-artifact@v3
+      with:
+        name: eaglercraft-client
+        path: |
+          web/
+          dist/
+          *.html
